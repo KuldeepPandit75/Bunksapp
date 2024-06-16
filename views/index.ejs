@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bunksapp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>All chats:</h1>
+    <div class="chatSec">
+        <%for(chat of chats){%>
+            <div class="chatCard">
+                <p>From: <i>
+                        <%=chat.from%>
+                    </i>
+                </p>
+                <p id="msg">
+                    <%=chat.message%>
+                        <div class="actBut">
+                            <form method="get" action="/chats/<%=chat._id%>/edit">
+                                <button>Edit</button>
+                            </form>
+                            <form method="post" action="/chats/<%=chat._id%>?_method=DELETE">
+                                <button>Delete</button>
+                            </form>
+                        </div>
+
+                </p>
+                <p>Received by <i>
+                        <%=chat.to%>
+                    </i></p>
+                <hr id="hrLine">
+                <p>
+                    <%=chat.created_at.toString().split(" ")[4] %><br>
+                </p>
+                <p>
+                    <%=chat.created_at.toString().split(" ").slice(0,4).join(" ") %>
+                </p>
+            </div>
+            <br>
+            <%}%>
+    </div>
+    <div class=" sendChat">
+                        <form method="post" action="/chats">
+                            <input type="text" placeholder="From" name="from">
+                            <textarea placeholder="Type Message" id="textBox" name="msg"></textarea>
+                            <input type="text" placeholder="To" name="to">
+
+                            <button>Send</button>
+                        </form>
+            </div>
+</body>
+
+</html>

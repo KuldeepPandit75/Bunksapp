@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Bunksapp</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <ul id="messages">        
+        <%for(chat of chats){%>
+            <%if(chat.from==logCheck.name){%>
+                <li class="msgList">
+                    <div class="message-box sender">
+                        <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
+                        <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
+                    </div>
+                </li>
+            <%}else{%>
+                <li class="msgList">
+                    <div class="message-box receiver">
+                        <p id="senderName">~<%=chat.from%></p>
+                        <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
+                        <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
+                    </div>
+                </li>
+            <%}%>
+        <%}%>
+    </ul>
+    <form id="form" method="post" action="/bunksapp/chat/<%=logCheck._id%>">
+      <input id="input" autocomplete="off" name="sentMsg"/><button>Send</button>
+    </form>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            function createRecMessageElement(chat,sender) {
+                // Create the <li> element
+                const li = document.createElement('li');
+                li.className = 'msgList';
+
+                // Create the <div> element with class "message-box receiver"
+                const div = document.createElement('div');
+                div.className = 'message-box receiver';
+
+                // Create the <p> element for the sender name
+                const senderNameP = document.createElement('p');
+                senderNameP.id = 'senderName';
+                senderNameP.textContent = `~${sender}`;
+
+                // Create the <p> element for the message text
+                const messageTextP = document.createElement('p');
+                messageTextP.className = 'message-text';
+                messageTextP.innerHTML = `${chat}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
+
+                // Create the <span> element for the message time
+                const messageTimeSpan = document.createElement('span');
+                messageTimeSpan.className = 'message-time';
+                const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
+                messageTimeSpan.textContent = messageTime;
+
+                // Append the sender name, message text, and message time to the <div>
+                div.appendChild(senderNameP);
+                div.appendChild(messageTextP);
+                div.appendChild(messageTimeSpan);
+
+                // Append the <div> to the <li>
+                li.appendChild(div);
+
+                // Return the complete <li> element
+                return li;
+            }
+
+            function createSentMessageElement(chat) {
+                // Create the <li> element
+                const li = document.createElement('li');
+                li.className = 'msgList';
+
+                // Create the <div> element with class "message-box sender"
+                const div = document.createElement('div');
+                div.className = 'message-box sender';
+
+                // Create the <p> element for the message text
+                const messageTextP = document.createElement('p');
+                messageTextP.className = 'message-text';
+                messageTextP.innerHTML = `${chat}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
+
+                // Create the <span> element for the message time
+                const messageTimeSpan = document.createElement('span');
+                messageTimeSpan.className = 'message-time';
+                const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
+                messageTimeSpan.textContent = messageTime;
+
+                // Append the message text and message time to the <div>
+                div.appendChild(messageTextP);
+                div.appendChild(messageTimeSpan);
+
+                // Append the <div> to the <li>
+                li.appendChild(div);
+
+                // Return the complete <li> element
+                return li;
+            }
+
+            try{
+                const name="<%=logCheck.name%>";
+
+                const socket = io();
+
+                let form = document.querySelector("#form");
+                let msg = document.querySelector("#input");
+
+                form.addEventListener("submit", async(e) => {
+
+                    if (msg.value != "") {
+                        socket.emit("msgSend", msg.value,name);
+                        let chatSec=document.querySelector("#messages");
+                        let list=createSentMessageElement(msg.value);
+                        chatSec.append(list);  
+                        list.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                    setTimeout(() => {
+                        msg.value = "";
+                    }, 100);
+                });
+
+                socket.on("msgRec", (msg,sender) => {
+                    let chatSec=document.querySelector("#messages");
+                    let list=createRecMessageElement(msg,sender);
+                    chatSec.append(list);
+                    list.scrollIntoView({ behavior: 'smooth' });
+                })
+
+                socket.on("connect", () => {
+                    console.log("Connected to server");
+
+                });
+
+                socket.on("disconnect", () => {
+                    console.log("Disconnected from server");
+                });
+            }catch(err){
+                console.log(err);
+            }
+
+            
+
+        });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Edit</title>
+</head>
+
+<body>
+    <h2>Edit:</h2>
+    <p>Chat send by <%=typo.from%> to <%=typo.to%>
+    </p>
+    <form method="POST" action="/chats/<%=typo._id%>?_method=PUT">
+        <textarea type="text" name="newMsg"><%=typo.message%></textarea><br>
+        <button>Apply Changes!</button>
+    </form>
+</body>
+
+</html>
