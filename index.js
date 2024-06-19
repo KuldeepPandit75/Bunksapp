@@ -37,7 +37,7 @@ main()
     .catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect("mongodb+srv://kuldeeppandat:kpvaultserver8055@cluster1.rbtvmid.mongodb.net/whatsapp?retryWrites=true&w=majority&appName=Cluster1");
+    await mongoose.connect("mongodb://localhost:27017/whatsapp");
 }
 
 app.get("/", (req, res) => {
