@@ -5,9 +5,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    student:{
+        type: Boolean,
+        required: true,
+        default: false
+    },
     rollno: {
-        type: String,
-        required: true
+        type: String
     },
     email: {
         type: String,

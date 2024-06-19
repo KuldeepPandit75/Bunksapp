@@ -4,16 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bunksapp Signup</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-    <h2>Welcome to Bunksapp!</h2>
-    <h3>Enter Your Details:</h3>
-    <form method="post" action="/bunksapp/signup">
-        <input type="text" name="name" placeholder="Enter Your Name">
-        <input type="text" name="roll" placeholder="Enter Your Roll No">
-        <input type="text" name="email" placeholder="Enter Your Email">
-        <input type="text" name="password" placeholder="Enter Your New Password">
-        <button>Sign Up!</button>
-    </form>
+<body id="signBody">
+    <div class="signCard">
+        <h2 id="signWel">Welcome to Bunksapp!</h2>
+        <h3 id="signDet">Enter Your Details:</h3>
+        <form id="signForm" method="post" action="/bunksapp/signup">
+            <input type="text" name="name" id="signName" placeholder="Enter Your Name">
+            <label id="1">
+                <input type="radio" name="userPorp" value="student" id="stuPorp">Student
+            </label>
+            <label id="2">
+                <input type="radio" name="userPorp" value="project viewer" id="projPorp">Project Viewer
+            </label>
+            <input type="text" name="roll" id="signRoll" placeholder="Enter Your Roll No">
+            <input type="text" name="email" id="signEmail" placeholder="Enter Your Email">
+            <input type="text" name="password" id="signPass" placeholder="Enter Your New Password">
+            <button id="signBtn">Sign Up!</button>
+        </form>
+        <p id="signPara">Already have an account! <a href="/bunksapp/login">Log in!</a></p>
+    </div>
+    <script src="/app.js"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ const app = express();
 const path = require("path");
 const Chat = require("./models/chat.js");
 const User = require("./models/user.js");
+const Roll = require("./models/rollregisterd.js");
 const methodOverride = require("method-override");
 var jwt = require("jsonwebtoken");
 const secretKeyJWT="kuldeepwebd";
@@ -13,14 +14,16 @@ const { Server } = require("socket.io");
 const { createServer } = require("node:http");
 const cookieParser = require('cookie-parser');
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server,{
+    connectionStateRecovery: {}
+});
 
 app.use(methodOverride("_method"))
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const port = 9000;
+const port = 8080;
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "/views"));
@@ -34,7 +37,7 @@ main()
     .catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect("mongodb+srv://kuldeeppandat:kpvaultserver8055@cluster1.rbtvmid.mongodb.net/whatsapp?retryWrites=true&w=majority&appName=Cluster1");
+    await mongoose.connect("mongodb://localhost:27017/whatsapp");
 }
 
 app.get("/", (req, res) => {
@@ -45,29 +48,59 @@ app.get("/bunksapp/signup",(req,res)=>{
     res.render("signup.ejs")
 })
 
-app.post("/bunksapp/signup",(req,res)=>{
+app.post("/bunksapp/signup",async(req,res)=>{
     try{
-        let { name,roll,email,password } = req.body;
-        let newUser = new User({
-            name: name.toLowerCase(),
-            rollno: roll.toLowerCase(),
-            email: email.toLowerCase(),
-            pass: password
-        })
-        newUser.save()
-            .catch((err) => {
-                console.log(err);
-            })
+        let { name,userPorp,roll,email,password } = req.body;
+        let userStat;
+        if(userPorp=="student"){
+            userStat=true;
+        }else{
+            userStat=false;
+        };
 
-        res.redirect("/bunksapp/login");
-    }catch{
+        if(userStat){
+            let rollPresence= await Roll.find({rollno:roll});
+            if(rollPresence.length==0){
+                res.send("invalid roll no")
+            }else{
+                let delStat= await Roll.deleteOne({rollno:roll});
+                console.log(delStat);
+                let newUser = new User({
+                    name: name.toLowerCase(),
+                    student: userStat,
+                    rollno: roll.toLowerCase(),
+                    email: email.toLowerCase(),
+                    pass: password
+                });
+                newUser.save()
+                    .catch((err) => {
+                        console.log(err);
+                    });    
+                res.redirect("/bunksapp/login");
+                
+            };
+        }else{
+            let newUser = new User({
+                name: name.toLowerCase(),
+                student: userStat,
+                email: email.toLowerCase(),
+                pass: password
+            });
+            newUser.save()
+                .catch((err) => {
+                    console.log(err);
+                });    
+            res.redirect("/bunksapp/login");
+        }
+
+        }catch{
         res.send("something went wrong!");
     }
-})
+});
 
 app.get("/bunksapp/login",(req,res)=>{
     res.render("login.ejs");
-})
+});
 
 app.post("/bunksapp/login",async(req,res)=>{
     try{
@@ -81,7 +114,7 @@ app.post("/bunksapp/login",async(req,res)=>{
             await User.updateOne({_id: (validUser[0]._id)},{logedStat:true});
             res
             .cookie("token",token,{httpOnly:true,secure:true,sameSite:"none"})
-            .redirect(`/bunksapp/${validUser[0]._id}`);
+            .redirect(`/bunksapp/${validUser[0]._id}/home`);
         }else{
             res.send("Invalid User");
         }
@@ -90,34 +123,38 @@ app.post("/bunksapp/login",async(req,res)=>{
     } 
 });
 
-app.get("/bunksapp/home",(req,res)=>{
-    res.render("home.ejs");
+app.get("/bunksapp/:id/home",async(req,res)=>{
+    let {id}=req.params;
+    let logUser=await User.findById(id);
+    res.render("home.ejs",{logUser});
 })
 
-app.get("/bunksapp/:id", async(req, res) => {
+app.get("/bunksapp/:id/:roomName", async(req, res) => {
     try{
-        let {id}=req.params;
+        let {id,roomName}=req.params;
         let logCheck=await User.findById(id);
-        if(logCheck.logedStat){
-            let chats = await Chat.find();
-            res.render("bunksapp.ejs",{chats,logCheck});
-        }else{
-            res.send("Logged Out! Log in Again");
-        }
+        // if(logCheck.logedStat){
+            let chats = await Chat.find({room:roomName});
+            res.render("bunksapp.ejs",{chats,logCheck,roomName});
+        // }else{
+            res.send("Logged Out! Log in Again.")
+        // }
     }catch(err){
         console.log(err);
     }
     
 });
 
-app.post("/bunksapp/chat/:id",async(req,res)=>{
+app.post("/bunksapp/chat/:id/:roomName",async(req,res)=>{
     try{
         let { sentMsg } = req.body;
-        let {id}=req.params;
+        let {id,roomName}=req.params;
         let user=await User.findById(id);
+
         let chat0 = new Chat({
             from: user.name,
             message: sentMsg,
+            room: roomName,
             created_at: new Date()
         });
         chat0.save().catch((err) => {
@@ -125,7 +162,7 @@ app.post("/bunksapp/chat/:id",async(req,res)=>{
         });
             
     }catch{
-        res.send("something went wrong buh");
+        res.send("something went wrong");
     }
     res.status(204).send();
     
@@ -168,16 +205,27 @@ io.on("connection",(socket) => {
         console.log("user connected!");
         console.log(socket.id);
 
+        let joinedRoom=[];
+
         // socket.broadcast.emit(`${socket.id} joined the server`)
+
+        socket.on("joinReq",(roomName)=>{
+            socket.join(roomName);
+            joinedRoom.push(roomName);
+            console.log(joinedRoom)
+        })
 
         socket.on("disconnect",async()=>{
             console.log("user disconnected!");
             await User.updateOne({_id: decoded._id},{logedStat:false});
+            joinedRoom=[];
         })
 
         socket.on("msgSend", (msg,name) => {
-            socket.broadcast.emit("msgRec", msg,name);
+            socket.to(joinedRoom[0]).emit("msgRec", msg,name);
         });
+
+        
     }catch(err){
         console.log(err);
     }

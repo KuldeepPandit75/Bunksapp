@@ -4,8 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bunksapp Home</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body id="homeBody">
     <h1>Room Available</h1>
+    <div class="rooms">
+        <div class="card">
+            <img src="/elements/gc.jpg" alt="Group Image" class="card-image">
+            <div class="card-content">
+                <h2 class="group-name">Universal Chat Room</h2>
+                <a href="/bunksapp/<%=logUser._id%>/uniRoom" class="join-button uniBtn">Join Room!</a>
+            </div>
+        </div>
+        <%if(logUser.student){%>
+        <div class="card">
+            <img src="/elements/a8.jpg" alt="Group Image" class="card-image">
+            <div class="card-content">
+                <h2 class="group-name">A8 Chat Room</h2>
+                <a href="/bunksapp/<%=logUser._id%>/a8Room" class="join-button a8Btn">Join Room!</a>
+            </div>
+        </div>
+        <%}%>
+    </div>
+
 </body>
 </html>

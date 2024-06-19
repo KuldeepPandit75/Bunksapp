@@ -10,6 +10,10 @@ const chatSchema = new mongoose.Schema({
         required: true,
         maxLength: 50,
     },
+    room:{
+        type: String,
+        required: true,
+    },
     created_at: {
         type: Date,
         required: true

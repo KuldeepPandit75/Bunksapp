@@ -36,7 +36,7 @@
     border: black 0.5px solid;
 }
 
-body {
+#bunkBody {
     margin: 0;
     padding-bottom: 3rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -160,4 +160,271 @@ body {
 #senderName{
     margin:0;
     font-size: 13px;
+}
+
+/* chat-gpt styling for the rooms card */
+
+#homeBody{
+    margin-left: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.rooms{
+    display: flex;
+
+}
+
+.card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 300px;
+    text-align: center;
+    margin: 30px;
+}
+
+.card-image {
+    width: 100%;
+    height: auto;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.group-name {
+    margin: 0 0 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.join-button {
+    background-color: #007BFF;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.join-button:hover {
+    background-color: #0056b3;
+}
+
+/* chatgpt styling for login Page */
+
+/* Reset some basic styles */
+#logBody, h2, p, input, button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#logBody {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.logCard {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+}
+
+#logHeading {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+#logForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#logForm input {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#logForm input:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+#logBtn {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#logBtn:hover {
+    background-color: #0056b3;
+}
+
+#logPara {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+#logPara a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+#logPara a:hover {
+    text-decoration: underline;
+}
+
+/* chatgpt styling for signup page */
+
+#signBody, h2, h3, p, input, button, label {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#signBody {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.signCard {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+}
+
+#signWel, #signDet {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+#signForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#signForm input[type="text"], #signForm input[type="password"] {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#signForm input:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+#signForm label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+#signForm label input {
+    margin-right: 10px;
+}
+
+#signBtn {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#signBtn:hover {
+    background-color: #0056b3;
+}
+
+#signPara {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+#signPara a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+#signPara a:hover {
+    text-decoration: underline;
+}
+
+/* chatgpt styling for header */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    position:sticky;
+    top:0;
+    z-index: 2;
+}
+.circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #abf176;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+}
+.header p {
+    margin: 0;
+    font-size: 18px;
+    color: #343a40;
+    flex-grow: 1;
+    text-align: center;
+}
+.fa-ellipsis-vertical {
+    font-size: 18px;
+    color: #343a40;
 }
