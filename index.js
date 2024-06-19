@@ -37,7 +37,7 @@ main()
     .catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect("mongodb+srv://kuldeeppandat:kpvaultserver8055@cluster1.rbtvmid.mongodb.net/whatsapp?retryWrites=true&w=majority&appName=Cluster1");
+    await mongoose.connect("mongodb+srv://kuldeeppandat:<password>@cluster1.rbtvmid.mongodb.net/whatsapp?retryWrites=true&w=majority&appName=Cluster1");
 }
 
 app.get("/", (req, res) => {
@@ -137,7 +137,7 @@ app.get("/bunksapp/:id/:roomName", async(req, res) => {
             let chats = await Chat.find({room:roomName});
             res.render("bunksapp.ejs",{chats,logCheck,roomName});
         // }else{
-            res.send("Logged Out! Log in Again.")
+            // res.send("Logged Out! Log in Again.")
         // }
     }catch(err){
         console.log(err);
@@ -204,6 +204,10 @@ io.on("connection",(socket) => {
 
         console.log("user connected!");
         console.log(socket.id);
+
+        const ipAddress = socket.handshake.address;
+
+        console.log(ipAddress);
 
         let joinedRoom=[];
 
