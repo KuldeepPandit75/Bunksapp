@@ -41,6 +41,7 @@
     padding-bottom: 3rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #8888884c;
+    overflow-x: hidden;
 }
 
 #form {
@@ -160,6 +161,41 @@
 #senderName{
     margin:0;
     font-size: 13px;
+}
+
+.options{
+    height: 40px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    width:180px;
+    position: absolute;
+    right: 10px;
+    top: 60px;
+    background-color: grey;
+    border-radius: 20px 0 20px 20px;
+}
+
+#dropIcon{
+    height: 40px;
+    width: 40px ;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#dropIcon:hover{
+    background-color: rgba(128, 128, 128, 0.52);
+}
+
+#opt1{
+    font-size: 17px;
+    color: white;
+}
+
+#opt1:hover{
+    cursor: pointer;
 }
 
 /* chat-gpt styling for the rooms card */

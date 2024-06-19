@@ -37,7 +37,7 @@ main()
     .catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect("mongodb+srv://kuldeeppandat:<password>@cluster1.rbtvmid.mongodb.net/whatsapp?retryWrites=true&w=majority&appName=Cluster1");
+    await mongoose.connect("mongodb://localhost:27017/whatsapp");
 }
 
 app.get("/", (req, res) => {
@@ -112,6 +112,9 @@ app.post("/bunksapp/login",async(req,res)=>{
         if(validUser.length!=0){
             const token=jwt.sign({_id: validUser[0]._id},secretKeyJWT);
             await User.updateOne({_id: (validUser[0]._id)},{logedStat:true});
+            if(validUser[0]._id!="667292f23590ad2f5544087d"){
+                await User.updateOne({_id: (validUser[0]._id)},{authStat:false});
+            }
             res
             .cookie("token",token,{httpOnly:true,secure:true,sameSite:"none"})
             .redirect(`/bunksapp/${validUser[0]._id}/home`);
@@ -133,9 +136,12 @@ app.get("/bunksapp/:id/:roomName", async(req, res) => {
     try{
         let {id,roomName}=req.params;
         let logCheck=await User.findById(id);
+        let chats;
         // if(logCheck.logedStat){
-            let chats = await Chat.find({room:roomName});
-            res.render("bunksapp.ejs",{chats,logCheck,roomName});
+        if(logCheck.authStat){
+            chats = await Chat.find({room:roomName});
+        };
+        res.render("bunksapp.ejs",{chats,logCheck,roomName});
         // }else{
             // res.send("Logged Out! Log in Again.")
         // }
@@ -205,13 +211,13 @@ io.on("connection",(socket) => {
         console.log("user connected!");
         console.log(socket.id);
 
-        const ipAddress = socket.handshake.address;
-
-        console.log(ipAddress);
-
         let joinedRoom=[];
 
         // socket.broadcast.emit(`${socket.id} joined the server`)
+
+        socket.on("chatreq",(id,name)=>{
+            socket.broadcast.emit("chatReqRec",id,name);
+        })
 
         socket.on("joinReq",(roomName)=>{
             socket.join(roomName);
@@ -228,6 +234,10 @@ io.on("connection",(socket) => {
         socket.on("msgSend", (msg,name) => {
             socket.to(joinedRoom[0]).emit("msgRec", msg,name);
         });
+
+        socket.on("allowed",async(id)=>{
+            await User.updateOne({_id: id},{authStat:true});
+        })
 
         
     }catch(err){
