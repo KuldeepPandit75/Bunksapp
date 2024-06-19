@@ -112,7 +112,7 @@ app.post("/bunksapp/login",async(req,res)=>{
         if(validUser.length!=0){
             const token=jwt.sign({_id: validUser[0]._id},secretKeyJWT);
             await User.updateOne({_id: (validUser[0]._id)},{logedStat:true});
-            if(validUser[0]._id!="667292f23590ad2f5544087d"){
+            if(validUser[0]._id!="667298d69d8ec76a6c9356b1"){
                 await User.updateOne({_id: (validUser[0]._id)},{authStat:false});
             }
             res

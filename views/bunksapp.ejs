@@ -17,7 +17,7 @@
         <%}%>
         <div class="optMech">
             <i id="dropIcon" class="fa-solid fa-ellipsis-vertical"></i>
-            <%if(logCheck._id!="667292f23590ad2f5544087d"){%>
+            <%if(logCheck._id!="667298d69d8ec76a6c9356b1"){%>
                 <div class="options">
                     <p id="opt1">Prev Chat Request</p>
                 </div>
@@ -180,7 +180,7 @@
                 let form = document.querySelector("#form");
                 let msg = document.querySelector("#input");
                 let dropDown=document.querySelector(".optMech");
-                if("<%=logCheck._id%>"!="667292f23590ad2f5544087d"){
+                if("<%=logCheck._id%>"!="667298d69d8ec76a6c9356b1"){
                     let dropBox=document.querySelector(".options");
                     let chatReq=document.querySelector("#opt1");
 
@@ -201,7 +201,7 @@
 
                 
                 socket.on("chatReqRec",(id,name)=>{
-                    if("<%=logCheck._id%>"=="667292f23590ad2f5544087d"){
+                    if("<%=logCheck._id%>"=="667298d69d8ec76a6c9356b1"){
                         let chatSec=document.querySelector("#messages");
                         let list=createChatReqElement(`chat req received from id ${id}`,name);
                         chatSec.append(list);
