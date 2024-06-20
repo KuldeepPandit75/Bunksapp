@@ -17,6 +17,10 @@ const chatSchema = new mongoose.Schema({
     created_at: {
         type: Date,
         required: true
+    },
+    anonymous:{
+        type: Boolean,
+        default: false
     }
 });
 

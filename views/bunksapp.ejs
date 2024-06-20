@@ -27,7 +27,13 @@
     </div>
     <ul id="messages">        
         <%if(logCheck.authStat){%>
+            <%let currDate=null%>
             <%for(chat of chats){%>
+    
+                <%if(currDate!=chat.created_at.toString().split(" ").slice(0,3).join(" ")){%>
+                    <%currDate=chat.created_at.toString().split(" ").slice(0,3).join(" ")%>
+                    <li class="dateBox"><%= currDate %></li>
+                <%}%>
                 <%if(chat.from==logCheck.name){%>
                     <li class="msgList">
                         <div class="message-box sender">
@@ -38,7 +44,11 @@
                 <%}else{%>
                     <li class="msgList">
                         <div class="message-box receiver">
-                            <p id="senderName">~<%=chat.from%></p>
+                            <%if(chat.anonymous && logCheck._id!="667298d69d8ec76a6c9356b1"){%>
+                                <p id="senderName">~anonymous</p>
+                            <%}else{%>
+                                <p id="senderName">~<%=chat.from%></p>
+                            <%}%>
                             <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
                             <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
                         </div>
@@ -48,9 +58,28 @@
         <%}%>
         
     </ul>
+    <!-- <div id="voteModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <form id="voteForm">
+            <label for="votePurpose">Vote Purpose:</label>
+            <input type="text" id="votePurpose" name="votePurpose" required><br><br>
+            <label for="options">Options:</label><br>
+            <div id="optionsContainer">
+              <input type="text" name="option[]" required placeholder="Enter Option"><br><br>
+              <input type="text" name="option[]" required placeholder="Enter Option"><br><br>
+            </div>
+            <button type="button" id="addOpt">Add Option</button><br><br>
+            <button type="button" id="cancelVote">Cancel</button>
+            <button type="submit">Send Vote</button>
+          </form>
+        </div>
+    </div> -->
     <form id="form" method="post" action="/bunksapp/chat/<%=logCheck._id%>/<%=roomName%>">
-      <input id="input" autocomplete="off" name="sentMsg"/><button>Send</button>
-    </form>
+        <!-- <div class="vote"><i class="fa-solid fa-square-poll-vertical"></i></div> -->
+        <input id="input" autocomplete="off" name="sentMsg"/>
+        <button type="submit" id="nonAnony" name="submitBtn" value="nonAnony">Send</button>
+        <button type="submit" id="anony" name="submitBtn" value="anony">Send</button>
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -128,25 +157,25 @@
             function createChatReqElement(msg,sender) {
                 // Create the <li> element
                 const li = document.createElement('li');
-                li.className = 'msgList';
+                li.className = 'reqMsg';
 
                 // Create the <div> element with class "message-box receiver"
                 const div = document.createElement('div');
-                div.className = 'message-box receiver';
+                div.className = 'req-box';
 
                 // Create the <p> element for the sender name
                 const senderNameP = document.createElement('p');
-                senderNameP.id = 'senderName';
+                senderNameP.id = 'reqSender';
                 senderNameP.textContent = `~${sender}`;
 
                 // Create the <p> element for the message text
                 const messageTextP = document.createElement('p');
-                messageTextP.className = 'message-text';
+                messageTextP.className = 'req-text';
                 messageTextP.innerHTML = `${msg}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
 
                 // Create the <span> element for the message time
                 const messageTimeSpan = document.createElement('span');
-                messageTimeSpan.className = 'message-time';
+                messageTimeSpan.className = 'req-time';
                 const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
                 messageTimeSpan.textContent = messageTime;
 
@@ -206,18 +235,36 @@
                         let list=createChatReqElement(`chat req received from id ${id}`,name);
                         chatSec.append(list);
                         list.scrollIntoView({ behavior: 'smooth' });
-                        let allowBtn=document.querySelector(".allow");  
-                        allowBtn.addEventListener("click",()=>{
-                            socket.emit("allowed",id);
-                            allowBtn.innerText="Allowed";
-                        })
+                        let allowBtn=document.querySelectorAll(".allow");
+                        for(let i=0;i<allowBtn.length;i++){
+                            allowBtn[i].addEventListener("click",()=>{
+                                socket.emit("allowed",id);
+                                allowBtn[i].innerText="Allowed";
+                            })
+                        }
+                       
                     }
-                })
+                }) 
 
-                form.addEventListener("submit", async(e) => {
+                form[1].addEventListener("click", async(e) => {
 
                     if (msg.value != "") {
                         socket.emit("msgSend", msg.value,"<%=logCheck.name%>");
+                        let chatSec=document.querySelector("#messages");
+                        let list=createSentMessageElement(msg.value);
+                        chatSec.append(list);  
+                        list.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                    setTimeout(() => {
+                        msg.value = "";
+                    }, 100);
+                });
+
+                form[2].addEventListener("click", async(e) => {
+
+                    if (msg.value != "") {
+                        socket.emit("msgSend", msg.value,"anonymous");
                         let chatSec=document.querySelector("#messages");
                         let list=createSentMessageElement(msg.value);
                         chatSec.append(list);  
@@ -235,6 +282,49 @@
                 }else{
                     socket.emit("joinReq","uniRoom");
                 }
+
+                // document.querySelector(".vote").addEventListener("click",()=>{
+                //     const modal = document.getElementById('voteModal');
+                //     modal.style.display = "block";
+                // });
+
+                // // Function to close the modal
+                // document.querySelector('.close').addEventListener("click",()=> {
+                //     const modal = document.getElementById('voteModal');
+                //     modal.style.display = "none";
+                // })
+
+                //     // Function to add additional option field
+                // document.querySelector("#addOpt").addEventListener("click",()=>{
+                //     const optionsContainer = document.getElementById('optionsContainer');
+                //     const input = document.createElement('input');
+                //     input.type = 'text';
+                //     input.name = 'option[]';
+                //     input.required = true;
+                //     input.placeholder = 'Enter option';
+                //     optionsContainer.appendChild(input);
+                //     optionsContainer.appendChild(document.createElement('br'));
+                //     optionsContainer.appendChild(document.createElement('br'));
+                // });
+
+                // // Function to handle form submission (you can modify this as per your backend requirements)
+                // document.getElementById('voteForm').addEventListener('submit', (e) => {
+                //     e.preventDefault();
+                //     const formData = new FormData(e.target);
+                //     // Example of sending form data via Socket.io
+                //     socket.emit('sendVote', {
+                //         purpose: formData.get('votePurpose'),
+                //         options: formData.getAll('option')
+                //     });
+                //     const modal = document.getElementById('voteModal');
+                //     modal.style.display = "none"; // Close the modal after sending vote
+                // });
+
+                // // Function to cancel vote
+                // document.querySelector("#cancelVote").addEventListener("click",()=>{
+                //     const modal = document.getElementById('voteModal');
+                //     modal.style.display = "none";
+                // });
 
                 socket.on("msgRec", (msg,sender) => {
                     let chatSec=document.querySelector("#messages");

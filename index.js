@@ -155,17 +155,34 @@ app.post("/bunksapp/chat/:id/:roomName",async(req,res)=>{
     try{
         let { sentMsg } = req.body;
         let {id,roomName}=req.params;
+        const submitBtn=req.body.submitBtn;
         let user=await User.findById(id);
 
-        let chat0 = new Chat({
-            from: user.name,
-            message: sentMsg,
-            room: roomName,
-            created_at: new Date()
-        });
-        chat0.save().catch((err) => {
-            console.log(err);
-        });
+        if(submitBtn=="nonAnony"){
+            let chat0 = new Chat({
+                from: user.name,
+                message: sentMsg,
+                room: roomName,
+                created_at: new Date(),
+                anonymous: false
+            });
+            chat0.save().catch((err) => {
+                console.log(err);
+            });
+        }else{
+            let chat0 = new Chat({
+                from: user.name,
+                message: sentMsg,
+                room: roomName,
+                created_at: new Date(),
+                anonymous: true
+            });
+            chat0.save().catch((err) => {
+                console.log(err);
+            });
+        }
+        
+        
             
     }catch{
         res.send("something went wrong");
@@ -216,7 +233,7 @@ io.on("connection",(socket) => {
         // socket.broadcast.emit(`${socket.id} joined the server`)
 
         socket.on("chatreq",(id,name)=>{
-            socket.broadcast.emit("chatReqRec",id,name);
+            socket.broadcast.to(joinedRoom[0]).emit("chatReqRec",id,name);
         })
 
         socket.on("joinReq",(roomName)=>{
