@@ -38,7 +38,7 @@
                     <li class="msgList">
                         <div class="message-box sender">
                             <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
-                            <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
+                            <span class="message-time"><%=new Date(chat.created_at).toString().split(" ")[4].slice(0,5) %></span>
                             <span class="timeStore"><%=chat.created_at%></span>
                         </div>
                     </li>
@@ -51,7 +51,7 @@
                                 <p id="senderName">~<%=chat.from%></p>
                             <%}%>
                             <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
-                            <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
+                            <span class="message-time"><%=new Date(chat.created_at).toString().split(" ")[4].slice(0,5) %></span>
                         </div>
                     </li>
                 <%}%>
