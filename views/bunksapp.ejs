@@ -39,6 +39,7 @@
                         <div class="message-box sender">
                             <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
                             <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
+                            <span class="timeStore"><%=chat.created_at%></span>
                         </div>
                     </li>
                 <%}else{%>
@@ -64,10 +65,10 @@
           <form id="voteForm">
             <label for="votePurpose">Vote Purpose:</label>
             <input type="text" id="votePurpose" name="votePurpose" required><br><br>
-            <label for="options">Options:</label><br>
+            <p>Options:</p><br>
             <div id="optionsContainer">
-              <input type="text" name="option[]" required placeholder="Enter Option"><br><br>
-              <input type="text" name="option[]" required placeholder="Enter Option"><br><br>
+              <input type="text" name="option" required placeholder="Enter Option"><br><br>
+              <input type="text" name="option" required placeholder="Enter Option"><br><br>
             </div>
             <button type="button" id="addOpt">Add Option</button><br><br>
             <button type="button" id="cancelVote">Cancel</button>
@@ -75,6 +76,18 @@
           </form>
         </div>
     </div> -->
+    <div class="custom-context-menu" id="contextMenu">
+        <ul>
+          <li id="editMsg">Edit</li>
+          <li id="delMsg">Delete</li>
+        </ul>
+    </div>
+    <div class="editMsg">
+        <form>
+            <input type="text" name="editMsg">
+            <button>Edit</button>
+        </form>
+    </div>
     <form id="form" method="post" action="/bunksapp/chat/<%=logCheck._id%>/<%=roomName%>">
         <!-- <div class="vote"><i class="fa-solid fa-square-poll-vertical"></i></div> -->
         <input id="input" autocomplete="off" name="sentMsg"/>
@@ -143,9 +156,14 @@
                 const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
                 messageTimeSpan.textContent = messageTime;
 
+                const msgTimeStore=document.createElement('span');
+                msgTimeStore.className='timeStore';
+                msgTimeStore.innerText=new Date();
+
                 // Append the message text and message time to the <div>
                 div.appendChild(messageTextP);
                 div.appendChild(messageTimeSpan);
+                div.appendChild(msgTimeStore);
 
                 // Append the <div> to the <li>
                 li.appendChild(div);
@@ -153,6 +171,37 @@
                 // Return the complete <li> element
                 return li;
             }
+
+            //delete this
+
+            // function createVoteMessageElement(data) {
+            //     const li = document.createElement('li');
+            //     li.className = 'voteList';
+
+            //     const div = document.createElement('div');
+            //     div.className = 'vote-box';
+
+            //     const senderNameP = document.createElement('p');
+            //     senderNameP.id = 'senderName';
+            //     senderNameP.textContent = `~${sender}`;
+
+            //     const messageTextP = document.createElement('p');
+            //     messageTextP.className = 'vote-text';
+            //     messageTextP.innerHTML = `${data.purpose}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
+
+            //     const messageTimeSpan = document.createElement('span');
+            //     messageTimeSpan.className = 'vote-time';
+            //     const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
+            //     messageTimeSpan.textContent = messageTime;
+
+            //     div.appendChild(senderNameP);
+            //     div.appendChild(messageTextP);
+            //     div.appendChild(messageTimeSpan);
+
+            //     li.appendChild(div);
+
+            //     return li;
+            // }
 
             function createChatReqElement(msg,sender) {
                 // Create the <li> element
@@ -209,6 +258,7 @@
                 let form = document.querySelector("#form");
                 let msg = document.querySelector("#input");
                 let dropDown=document.querySelector(".optMech");
+
                 if("<%=logCheck._id%>"!="667298d69d8ec76a6c9356b1"){
                     let dropBox=document.querySelector(".options");
                     let chatReq=document.querySelector("#opt1");
@@ -283,6 +333,56 @@
                     socket.emit("joinReq","uniRoom");
                 }
 
+                let operationEle;
+                let sentMsgs=document.querySelectorAll(".sender");
+
+                const contextMenu = document.getElementById('contextMenu');
+                sentMsgs.forEach(sentMsg=>{
+                    sentMsg.parentElement.parentElement.addEventListener('contextmenu', function(event) {
+                        event.preventDefault(); // Prevent the default context menu from appearing
+
+                        // Get the position of the mouse click
+                        const posX = event.pageX;
+                        const posY = event.pageY;
+
+                        // Position the custom context menu at the click position
+                        contextMenu.style.top = `${posY}px`;
+                        contextMenu.style.left = `${posX}px`;
+                        if(event.target.parentElement.className=="message-box sender" || event.target.parentElement.className=="msgList"){
+                            contextMenu.style.display = 'block';
+                        }
+
+                        if(event.target.parentElement.className=="message-box sender"){
+                            operationEle=event.target.parentElement;
+                        }else{
+                            operationEle=event.target;
+                        }
+                        
+                    });
+                });
+
+                let deleteBtn=document.querySelector("#delMsg");
+                deleteBtn.addEventListener("click",(e)=>{
+                    let timeStore=new Date(operationEle.lastElementChild.innerText);
+                    let currTime=new Date();
+                    let duration=(currTime.getTime()- timeStore.getTime())/60000;
+                    console.log(duration);
+                    if(duration<60){
+                        let chatSec=document.querySelector("#messages");
+                        operationEle.parentElement.remove();
+                    }
+                    socket.emit("delMsg",operationEle.children[0].innerText,timeStore);
+                });
+
+                // Hide the context menu when clicking anywhere else
+                document.addEventListener('click', function(event) {
+                    if (contextMenu.style.display === 'block') {
+                    contextMenu.style.display = 'none';
+                    }
+                });
+
+
+
                 // document.querySelector(".vote").addEventListener("click",()=>{
                 //     const modal = document.getElementById('voteModal');
                 //     modal.style.display = "block";
@@ -299,7 +399,7 @@
                 //     const optionsContainer = document.getElementById('optionsContainer');
                 //     const input = document.createElement('input');
                 //     input.type = 'text';
-                //     input.name = 'option[]';
+                //     input.name = 'option';
                 //     input.required = true;
                 //     input.placeholder = 'Enter option';
                 //     optionsContainer.appendChild(input);
@@ -311,11 +411,12 @@
                 // document.getElementById('voteForm').addEventListener('submit', (e) => {
                 //     e.preventDefault();
                 //     const formData = new FormData(e.target);
-                //     // Example of sending form data via Socket.io
-                //     socket.emit('sendVote', {
+                //     let data={
                 //         purpose: formData.get('votePurpose'),
                 //         options: formData.getAll('option')
-                //     });
+                //     };
+                //     // Example of sending form data via Socket.io
+                //     socket.emit('sendVote', data);
                 //     const modal = document.getElementById('voteModal');
                 //     modal.style.display = "none"; // Close the modal after sending vote
                 // });
@@ -325,6 +426,15 @@
                 //     const modal = document.getElementById('voteModal');
                 //     modal.style.display = "none";
                 // });
+
+                socket.on("delRecMsg",(msg)=>{
+                    let recMsgs=document.querySelectorAll(".receiver");
+                    for(recMsg of recMsgs){
+                        if(recMsg.children[1].innerText.trim()==msg.trim()){
+                            recMsg.parentElement.remove();
+                        }
+                    }
+                })
 
                 socket.on("msgRec", (msg,sender) => {
                     let chatSec=document.querySelector("#messages");

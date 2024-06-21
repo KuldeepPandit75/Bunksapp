@@ -236,10 +236,20 @@ io.on("connection",(socket) => {
             socket.broadcast.to(joinedRoom[0]).emit("chatReqRec",id,name);
         })
 
+        // socket.on("sendVote",(f)=>{
+        //     socket.broadcast.to(joinedRoom[0]).emit("voteMsg",f);
+        // })
+
         socket.on("joinReq",(roomName)=>{
             socket.join(roomName);
             joinedRoom.push(roomName);
             console.log(joinedRoom)
+        })
+
+        socket.on("delMsg",async(msg)=>{
+            let chat=await Chat.deleteOne({message:msg.trim()});
+            console.log(chat);
+            socket.broadcast.to(joinedRoom[0]).emit("delRecMsg",msg);
         })
 
         socket.on("disconnect",async()=>{
