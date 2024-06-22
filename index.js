@@ -151,45 +151,45 @@ app.get("/bunksapp/:id/:roomName", async(req, res) => {
     
 });
 
-app.post("/bunksapp/chat/:id/:roomName",async(req,res)=>{
-    try{
-        let { sentMsg } = req.body;
-        let {id,roomName}=req.params;
-        const submitBtn=req.body.submitBtn;
-        let user=await User.findById(id);
+// app.post("/bunksapp/chat/:id/:roomName",async(req,res)=>{
+//     try{
+//         let { sentMsg } = req.body;
+//         let {id,roomName}=req.params;
+//         const submitBtn=req.body.submitBtn;
+//         let user=await User.findById(id);
 
-        if(submitBtn=="nonAnony"){
-            let chat0 = new Chat({
-                from: user.name,
-                message: sentMsg,
-                room: roomName,
-                created_at: new Date(),
-                anonymous: false
-            });
-            chat0.save().catch((err) => {
-                console.log(err);
-            });
-        }else{
-            let chat0 = new Chat({
-                from: user.name,
-                message: sentMsg,
-                room: roomName,
-                created_at: new Date(),
-                anonymous: true
-            });
-            chat0.save().catch((err) => {
-                console.log(err);
-            });
-        }
+//         if(submitBtn=="nonAnony"){
+//             let chat0 = new Chat({
+//                 from: user.name,
+//                 message: sentMsg,
+//                 room: roomName,
+//                 created_at: new Date(),
+//                 anonymous: false
+//             });
+//             chat0.save().catch((err) => {
+//                 console.log(err);
+//             });
+//         }else{
+//             let chat0 = new Chat({
+//                 from: user.name,
+//                 message: sentMsg,
+//                 room: roomName,
+//                 created_at: new Date(),
+//                 anonymous: true
+//             });
+//             chat0.save().catch((err) => {
+//                 console.log(err);
+//             });
+//         }
         
         
             
-    }catch{
-        res.send("something went wrong");
-    }
-    res.status(204).send();
+//     }catch{
+//         res.send("something went wrong");
+//     }
+//     res.status(204).send();
     
-});
+// });
 
 io.use((socket, next) => {
     try{
@@ -246,10 +246,10 @@ io.on("connection",(socket) => {
             console.log(joinedRoom)
         })
 
-        socket.on("delMsg",async(msg)=>{
-            let chat=await Chat.deleteOne({message:msg.trim()});
+        socket.on("delMsg",async(msg,timeStore)=>{
+            let chat=await Chat.deleteOne({message:msg.trim(),created_at:timeStore});
             console.log(chat);
-            socket.broadcast.to(joinedRoom[0]).emit("delRecMsg",msg);
+            socket.broadcast.to(joinedRoom[0]).emit("delRecMsg",msg,timeStore);
         })
 
         socket.on("disconnect",async()=>{
@@ -258,8 +258,37 @@ io.on("connection",(socket) => {
             joinedRoom=[];
         })
 
-        socket.on("msgSend", (msg,name) => {
-            socket.to(joinedRoom[0]).emit("msgRec", msg,name);
+        socket.on("msgSend", async(msg,name,id,date) => {
+            socket.to(joinedRoom[0]).emit("msgRec", msg,name,date);
+            let user=await User.findById(id);
+
+            let chat0 = new Chat({
+                from: user.name,
+                message: msg,
+                room: joinedRoom[0],
+                created_at: date,
+                anonymous: false
+            });
+            chat0.save().catch((err) => {
+                console.log(err);
+            });
+        });
+
+        socket.on("msgAnonySend", async(msg,name,id,date) => {
+            socket.to(joinedRoom[0]).emit("msgRec", msg,name,date);
+            let user=await User.findById(id);
+
+            let chat0 = new Chat({
+                from: user.name,
+                message: msg,
+                room: joinedRoom[0],
+                created_at: date,
+                anonymous: true
+            });
+            chat0.save().catch((err) => {
+                console.log(err);
+            });
+            console.log("2");
         });
 
         socket.on("allowed",async(id)=>{

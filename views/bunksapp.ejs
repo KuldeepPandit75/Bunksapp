@@ -30,15 +30,15 @@
             <%let currDate=null%>
             <%for(chat of chats){%>
     
-                <%if(currDate!=chat.created_at.toString().split(" ").slice(0,3).join(" ")){%>
-                    <%currDate=chat.created_at.toString().split(" ").slice(0,3).join(" ")%>
+                <%if(currDate!=new Date(chat.created_at).toString().split(" ").slice(0,3).join(" ")){%>
+                    <%currDate=new Date(chat.created_at).toString().split(" ").slice(0,3).join(" ")%>
                     <li class="dateBox"><%= currDate %></li>
                 <%}%>
                 <%if(chat.from==logCheck.name){%>
                     <li class="msgList">
                         <div class="message-box sender">
                             <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
-                            <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
+                            <span class="message-time"><%=new Date(chat.created_at).toString().split(" ")[4].slice(0,5) %></span>
                             <span class="timeStore"><%=chat.created_at%></span>
                         </div>
                     </li>
@@ -51,7 +51,9 @@
                                 <p id="senderName">~<%=chat.from%></p>
                             <%}%>
                             <p class="message-text"><%=chat.message%>&nbsp; &nbsp; &nbsp; &nbsp;</p>
-                            <span class="message-time"><%=chat.created_at.toString().split(" ")[4].slice(0,5) %></span>
+                            <span class="message-time"><%=new Date(chat.created_at).toString().split(" ")[4].slice(0,5) %></span>
+                            <span class="timeStore"><%=chat.created_at%></span>
+
                         </div>
                     </li>
                 <%}%>
@@ -88,18 +90,18 @@
             <button>Edit</button>
         </form>
     </div>
-    <form id="form" method="post" action="/bunksapp/chat/<%=logCheck._id%>/<%=roomName%>">
+    <form id="form" method="post" action="#">
         <!-- <div class="vote"><i class="fa-solid fa-square-poll-vertical"></i></div> -->
         <input id="input" autocomplete="off" name="sentMsg"/>
-        <button type="submit" id="nonAnony" name="submitBtn" value="nonAnony">Send</button>
-        <button type="submit" id="anony" name="submitBtn" value="anony">Send</button>
+        <button type="submit" id="nonAnony" >Send</button>
+        <button type="submit" id="anony" >Send</button>
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
 
         document.addEventListener("DOMContentLoaded", () => {
 
-            function createRecMessageElement(chat,sender) {
+            function createRecMessageElement(chat,sender,date) {
                 // Create the <li> element
                 const li = document.createElement('li');
                 li.className = 'msgList';
@@ -121,7 +123,7 @@
                 // Create the <span> element for the message time
                 const messageTimeSpan = document.createElement('span');
                 messageTimeSpan.className = 'message-time';
-                const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
+                const messageTime = new Date(date).toString().split(" ")[4].slice(0, 5);
                 messageTimeSpan.textContent = messageTime;
 
                 // Append the sender name, message text, and message time to the <div>
@@ -136,7 +138,7 @@
                 return li;
             }
 
-            function createSentMessageElement(chat) {
+            function createSentMessageElement(chat,date) {
                 // Create the <li> element
                 const li = document.createElement('li');
                 li.className = 'msgList';
@@ -153,7 +155,7 @@
                 // Create the <span> element for the message time
                 const messageTimeSpan = document.createElement('span');
                 messageTimeSpan.className = 'message-time';
-                const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
+                const messageTime = date.toString().split(" ")[4].slice(0, 5);
                 messageTimeSpan.textContent = messageTime;
 
                 const msgTimeStore=document.createElement('span');
@@ -284,7 +286,6 @@
                         let chatSec=document.querySelector("#messages");
                         let list=createChatReqElement(`chat req received from id ${id}`,name);
                         chatSec.append(list);
-                        list.scrollIntoView({ behavior: 'smooth' });
                         let allowBtn=document.querySelectorAll(".allow");
                         for(let i=0;i<allowBtn.length;i++){
                             allowBtn[i].addEventListener("click",()=>{
@@ -292,17 +293,18 @@
                                 allowBtn[i].innerText="Allowed";
                             })
                         }
-                       
+                        list.scrollIntoView({ behavior: 'smooth' });
                     }
                 }) 
 
                 form[1].addEventListener("click", async(e) => {
-
+                    e.preventDefault();
                     if (msg.value != "") {
-                        socket.emit("msgSend", msg.value,"<%=logCheck.name%>");
+                        let date=new Date();
                         let chatSec=document.querySelector("#messages");
-                        let list=createSentMessageElement(msg.value);
+                        let list=createSentMessageElement(msg.value,date);
                         chatSec.append(list);  
+                        socket.emit("msgSend", msg.value,"<%=logCheck.name%>","<%=logCheck.id%>",date);
                         list.scrollIntoView({ behavior: 'smooth' });
                     }
 
@@ -312,13 +314,16 @@
                 });
 
                 form[2].addEventListener("click", async(e) => {
-
+                    e.preventDefault();
                     if (msg.value != "") {
-                        socket.emit("msgSend", msg.value,"anonymous");
+
+                        let date=new Date();
                         let chatSec=document.querySelector("#messages");
-                        let list=createSentMessageElement(msg.value);
+                        let list=createSentMessageElement(msg.value,date);
                         chatSec.append(list);  
+                        socket.emit("msgAnonySend", msg.value,"anonymous","<%=logCheck.id%>",date);
                         list.scrollIntoView({ behavior: 'smooth' });
+
                     }
 
                     setTimeout(() => {
@@ -363,10 +368,10 @@
 
                 let deleteBtn=document.querySelector("#delMsg");
                 deleteBtn.addEventListener("click",(e)=>{
-                    let timeStore=new Date(operationEle.lastElementChild.innerText);
+                    let timeStore=operationEle.lastElementChild.innerText;
+                    console.log(timeStore);
                     let currTime=new Date();
-                    let duration=(currTime.getTime()- timeStore.getTime())/60000;
-                    console.log(duration);
+                    let duration=(currTime.getTime()- new Date(timeStore).getTime())/60000;
                     if(duration<60){
                         let chatSec=document.querySelector("#messages");
                         operationEle.parentElement.remove();
@@ -428,18 +433,18 @@
                 //     modal.style.display = "none";
                 // });
 
-                socket.on("delRecMsg",(msg)=>{
+                socket.on("delRecMsg",(msg,timeStore)=>{
                     let recMsgs=document.querySelectorAll(".receiver");
                     for(recMsg of recMsgs){
-                        if(recMsg.children[1].innerText.trim()==msg.trim()){
+                        if(recMsg.children[1].innerText.trim()==msg.trim() && new Date(recMsg.children[3].innerText).getTime()==new Date(timeStore).getTime()){
                             recMsg.parentElement.remove();
                         }
                     }
                 })
 
-                socket.on("msgRec", (msg,sender) => {
+                socket.on("msgRec", (msg,sender,date) => {
                     let chatSec=document.querySelector("#messages");
-                    let list=createRecMessageElement(msg,sender);
+                    let list=createRecMessageElement(msg,sender,date);
                     chatSec.append(list);
                     list.scrollIntoView({ behavior: 'smooth' });
                 })
