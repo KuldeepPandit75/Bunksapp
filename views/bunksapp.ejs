@@ -560,7 +560,7 @@
                         let list=createRecMessageElement(botText,"bot:)",new Date());
                         let chatSec=document.querySelector("#messages");
                         chatSec.append(list);
-                    },2000);
+                    },100);
                 });
 
                 socket.on("disconnect", () => {
