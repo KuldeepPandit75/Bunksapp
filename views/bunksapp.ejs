@@ -29,7 +29,6 @@
         <%if(logCheck.authStat){%>
             <%let currDate=null%>
             <%for(chat of chats){%>
-    
                 <%if(currDate!=new Date(chat.created_at).toString().split(" ").slice(0,3).join(" ")){%>
                     <%currDate=new Date(chat.created_at).toString().split(" ").slice(0,3).join(" ")%>
                     <li class="dateBox"><%= currDate %></li>
@@ -61,37 +60,59 @@
         <%}%>
         
     </ul>
-    <!-- <div id="voteModal" class="modal">
+    <div id="overlay"></div>
+    <div id="popup">
+        <h2 id="reason"><%=vote[0].votePorp%></h2>
+        <form id="onVoteForm" method="post" >
+            <div id="options">
+                    <input type="radio" name="vote" value="<%=vote[0].options[0]%>" id="option0">
+                    <label for="option0"><%=vote[0].options[0]%> (<p style="margin:0; display: inline;"><%=vote[0].votedYes.length%></p>)</label><br>
+                    <input type="radio" name="vote" value="<%=vote[0].options[1]%>" id="option1">
+                    <label for="option1"><%=vote[0].options[1]%> (<p style="margin:0;display: inline;"><%=vote[0].votedNo.length%></p>)</label><br>
+            </div>
+            <button type="submit">Submit Vote</button>
+            <%if(logCheck._id=="667298d69d8ec76a6c9356b1"){%>
+                <button type="button" id="resetVote">Reset</button>
+            <%}%>
+        </form>
+    </div>
+    
+    <div id="voteModal" class="modal">
         <div class="modal-content">
-          <span class="close">&times;</span>
-          <form id="voteForm">
+        <span class="close">&times;</span>
+        <form id="voteForm" method="post">
             <label for="votePurpose">Vote Purpose:</label>
             <input type="text" id="votePurpose" name="votePurpose" required><br><br>
             <p>Options:</p><br>
             <div id="optionsContainer">
-              <input type="text" name="option" required placeholder="Enter Option"><br><br>
-              <input type="text" name="option" required placeholder="Enter Option"><br><br>
+            <input type="text" name="option" required placeholder="Enter Option"><br><br>
+            <input type="text" name="option" required placeholder="Enter Option"><br><br>
             </div>
             <button type="button" id="addOpt">Add Option</button><br><br>
             <button type="button" id="cancelVote">Cancel</button>
             <button type="submit">Send Vote</button>
-          </form>
+        </form>
         </div>
-    </div> -->
+    </div>
+            
     <div class="custom-context-menu" id="contextMenu">
         <ul>
           <li id="editMsg">Edit</li>
           <li id="delMsg">Delete</li>
         </ul>
     </div>
-    <div class="editMsg">
-        <form>
-            <input type="text" name="editMsg">
-            <button>Edit</button>
-        </form>
-    </div>
+
+    <form method="post" class="editMsg" action="#">
+        <input type="text" name="editMsg">
+        <input type="text" style="display: none;" name="timeStore">
+        <input type="text" style="display: none;" name="msgStore">
+        <button>Edit</button>
+    </form>
+
     <form id="form" method="post" action="#">
-        <!-- <div class="vote"><i class="fa-solid fa-square-poll-vertical"></i></div> -->
+        <%if(roomName=="a8Room"){%>
+            <div class="vote"><i class="fa-solid fa-square-poll-vertical"></i></div>
+        <%}%>
         <input id="input" autocomplete="off" name="sentMsg"/>
         <button type="submit" id="nonAnony" >Send</button>
         <button type="submit" id="anony" >Send</button>
@@ -126,10 +147,15 @@
                 const messageTime = new Date(date).toString().split(" ")[4].slice(0, 5);
                 messageTimeSpan.textContent = messageTime;
 
+                const msgTimeStore=document.createElement('span');
+                msgTimeStore.className='timeStore';
+                msgTimeStore.innerText=date;
+
                 // Append the sender name, message text, and message time to the <div>
                 div.appendChild(senderNameP);
                 div.appendChild(messageTextP);
                 div.appendChild(messageTimeSpan);
+                div.appendChild(msgTimeStore);
 
                 // Append the <div> to the <li>
                 li.appendChild(div);
@@ -155,12 +181,12 @@
                 // Create the <span> element for the message time
                 const messageTimeSpan = document.createElement('span');
                 messageTimeSpan.className = 'message-time';
-                const messageTime = date.toString().split(" ")[4].slice(0, 5);
+                const messageTime = new Date(date).toString().split(" ")[4].slice(0, 5);
                 messageTimeSpan.textContent = messageTime;
 
                 const msgTimeStore=document.createElement('span');
                 msgTimeStore.className='timeStore';
-                msgTimeStore.innerText=new Date();
+                msgTimeStore.innerText=date;
 
                 // Append the message text and message time to the <div>
                 div.appendChild(messageTextP);
@@ -173,37 +199,6 @@
                 // Return the complete <li> element
                 return li;
             }
-
-            //delete this
-
-            // function createVoteMessageElement(data) {
-            //     const li = document.createElement('li');
-            //     li.className = 'voteList';
-
-            //     const div = document.createElement('div');
-            //     div.className = 'vote-box';
-
-            //     const senderNameP = document.createElement('p');
-            //     senderNameP.id = 'senderName';
-            //     senderNameP.textContent = `~${sender}`;
-
-            //     const messageTextP = document.createElement('p');
-            //     messageTextP.className = 'vote-text';
-            //     messageTextP.innerHTML = `${data.purpose}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
-
-            //     const messageTimeSpan = document.createElement('span');
-            //     messageTimeSpan.className = 'vote-time';
-            //     const messageTime = new Date().toString().split(" ")[4].slice(0, 5);
-            //     messageTimeSpan.textContent = messageTime;
-
-            //     div.appendChild(senderNameP);
-            //     div.appendChild(messageTextP);
-            //     div.appendChild(messageTimeSpan);
-
-            //     li.appendChild(div);
-
-            //     return li;
-            // }
 
             function createChatReqElement(msg,sender) {
                 // Create the <li> element
@@ -300,7 +295,7 @@
                 form[1].addEventListener("click", async(e) => {
                     e.preventDefault();
                     if (msg.value != "") {
-                        let date=new Date();
+                        let date=new Date().toISOString();
                         let chatSec=document.querySelector("#messages");
                         let list=createSentMessageElement(msg.value,date);
                         chatSec.append(list);  
@@ -341,14 +336,17 @@
                 let operationEle;
                 let sentMsgs=document.querySelectorAll(".sender");
 
+                let posX;
+                let posY;
+
                 const contextMenu = document.getElementById('contextMenu');
                 sentMsgs.forEach(sentMsg=>{
                     sentMsg.parentElement.parentElement.addEventListener('contextmenu', function(event) {
                         event.preventDefault(); // Prevent the default context menu from appearing
 
                         // Get the position of the mouse click
-                        const posX = event.pageX;
-                        const posY = event.pageY;
+                        posX = event.pageX;
+                        posY = event.pageY;
 
                         // Position the custom context menu at the click position
                         contextMenu.style.top = `${posY}px`;
@@ -369,7 +367,6 @@
                 let deleteBtn=document.querySelector("#delMsg");
                 deleteBtn.addEventListener("click",(e)=>{
                     let timeStore=operationEle.lastElementChild.innerText;
-                    console.log(timeStore);
                     let currTime=new Date();
                     let duration=(currTime.getTime()- new Date(timeStore).getTime())/60000;
                     if(duration<60){
@@ -377,8 +374,9 @@
                         operationEle.parentElement.remove();
                         socket.emit("delMsg",operationEle.children[0].innerText,timeStore);
                     }
-                    
                 });
+
+                let editForm=document.querySelector(".editMsg");
 
                 // Hide the context menu when clicking anywhere else
                 document.addEventListener('click', function(event) {
@@ -387,51 +385,155 @@
                     }
                 });
 
+                let editBtn=document.querySelector("#editMsg");
+                editBtn.addEventListener("click",(e)=>{
+                    let timeStore=operationEle.lastElementChild.innerText;
+                    let currTime=new Date();
+                    let duration=(currTime.getTime()- new Date(timeStore).getTime())/60000;
+                    if(duration<60){
+                        editForm.style.top = `${posY-14}px`;
+                        editForm.style.left = `${posX-300}px`;
+                        editForm.style.display="block";
+                        msg=operationEle.children[0].innerText.trim();
+                        editForm[0].value=msg;
+                        editForm[1].value=timeStore;
+                        editForm[2].value=msg;
+                    }
+                });
+
+                editForm.addEventListener("submit",(e)=>{
+                    e.preventDefault();
+                    const formData=new FormData(editForm);
+                    let msg=formData.get("editMsg");
+                    let time=formData.get("timeStore");
+                    let oldMsg=formData.get("msgStore");
+                    socket.emit("editMsgReq",msg,time,oldMsg);
+                    editForm.style.display="none";
+                    for(sentMsg of sentMsgs){
+                        if(sentMsg.lastElementChild.innerText==time && sentMsg.children[0].innerText.trim()==oldMsg){
+                            sentMsg.children[0].innerHTML=`${msg}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
+                        }
+                    }
+                })
 
 
-                // document.querySelector(".vote").addEventListener("click",()=>{
-                //     const modal = document.getElementById('voteModal');
-                //     modal.style.display = "block";
-                // });
+                document.querySelector(".vote").addEventListener("click",()=>{
+                    try{
+                        let stat="<%=vote[0].votingStat%>";
+                        if(stat){
+                            document.getElementById('overlay').style.display = 'block';
+                            document.getElementById('popup').style.display = 'block';
+                        }else{
+                            const modal = document.getElementById('voteModal');
+                            modal.style.display = "block";
+                        }
+                    }catch(err){
+                        console.log(err);
+                        const modal = document.getElementById('voteModal');
+                        modal.style.display = "block";
+                    }
+                });
 
-                // // Function to close the modal
-                // document.querySelector('.close').addEventListener("click",()=> {
-                //     const modal = document.getElementById('voteModal');
-                //     modal.style.display = "none";
-                // })
+                // Function to close the modal
+                document.querySelector('.close').addEventListener("click",()=> {
+                    const modal = document.getElementById('voteModal');
+                    modal.style.display = "none";
+                })
 
-                //     // Function to add additional option field
-                // document.querySelector("#addOpt").addEventListener("click",()=>{
-                //     const optionsContainer = document.getElementById('optionsContainer');
-                //     const input = document.createElement('input');
-                //     input.type = 'text';
-                //     input.name = 'option';
-                //     input.required = true;
-                //     input.placeholder = 'Enter option';
-                //     optionsContainer.appendChild(input);
-                //     optionsContainer.appendChild(document.createElement('br'));
-                //     optionsContainer.appendChild(document.createElement('br'));
-                // });
+                    // Function to add additional option field
+                document.querySelector("#addOpt").addEventListener("click",()=>{
+                    const optionsContainer = document.getElementById('optionsContainer');
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = 'option';
+                    input.required = true;
+                    input.placeholder = 'Enter option';
+                    optionsContainer.appendChild(input);
+                    optionsContainer.appendChild(document.createElement('br'));
+                    optionsContainer.appendChild(document.createElement('br'));
+                });
 
-                // // Function to handle form submission (you can modify this as per your backend requirements)
-                // document.getElementById('voteForm').addEventListener('submit', (e) => {
-                //     e.preventDefault();
-                //     const formData = new FormData(e.target);
-                //     let data={
-                //         purpose: formData.get('votePurpose'),
-                //         options: formData.getAll('option')
-                //     };
-                //     // Example of sending form data via Socket.io
-                //     socket.emit('sendVote', data);
-                //     const modal = document.getElementById('voteModal');
-                //     modal.style.display = "none"; // Close the modal after sending vote
-                // });
+                // Function to handle form submission (you can modify this as per your backend requirements)
+                document.getElementById('voteForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    let data={
+                        purpose: formData.get('votePurpose'),
+                        options: formData.getAll('option')
+                    };
+                    // Example of sending form data via Socket.io
+                    const modal = document.getElementById('voteModal');
+                    modal.style.display = "none"; // Close the modal after sending vote
 
-                // // Function to cancel vote
-                // document.querySelector("#cancelVote").addEventListener("click",()=>{
-                //     const modal = document.getElementById('voteModal');
-                //     modal.style.display = "none";
-                // });
+                
+                    document.getElementById('reason').innerText = data.purpose;
+                    let optionsDiv = document.getElementById('options');
+                    optionsDiv.innerHTML = '';
+                    let options=data.options;
+                    options.forEach((option, index) => {
+                        let radioHtml = `<input type="radio" name="vote" value="${option}" id="option${index}">
+                                        <label for="option${index}">${option}</label><br>`;
+                        optionsDiv.innerHTML += radioHtml;
+                    });
+                    document.getElementById('overlay').style.display = 'block';
+                    document.getElementById('popup').style.display = 'block';
+                    socket.emit("votePost",data);
+                });
+
+                // Function to cancel vote
+                document.querySelector("#cancelVote").addEventListener("click",()=>{
+                    const modal = document.getElementById('voteModal');
+                    modal.style.display = "none";
+                });
+
+                document.getElementById("onVoteForm").addEventListener("submit", (e)=>{
+                    e.preventDefault();
+                    let selectedOption = document.querySelector('input[name="vote"]:checked');
+                    if (selectedOption) {
+                        alert('You voted for: ' + selectedOption.value.slice(0,2));
+                        socket.emit("voteUpdate",selectedOption.value,"<%=logCheck._id%>")
+                        closePopup();
+                    } else {
+                        alert('Please select an option before submitting.');
+                    }
+                });
+
+                function closePopup() {
+                    document.getElementById('overlay').style.display = 'none';
+                    document.getElementById('popup').style.display = 'none';
+                }
+
+                document.getElementById('overlay').addEventListener('click', closePopup);
+
+                if("<%=logCheck._id%>"=="667298d69d8ec76a6c9356b1"){
+                    document.getElementById('resetVote').addEventListener("click",()=>{
+                        socket.emit("resetVote");
+                        closePopup();
+                })
+                }
+                
+
+                socket.on("votedYesLiveUpdate",()=>{
+                    let options=document.querySelector("#options");
+                    let count=Number(options.children[1].children[0].innerText);
+                    options.children[1].children[0].innerText=count+1;
+                })
+                socket.on("votedNoLiveUpdate",()=>{
+                    let options=document.querySelector("#options");
+                    let count=Number(options.children[4].children[0].innerText);
+                    options.children[4].children[0].innerText=count+1;
+                })
+
+                socket.on("editRecMsgReq",(msg,time,oldMsg)=>{
+                    let recMsgs=document.querySelectorAll(".receiver");
+                    for(recMsg of recMsgs){
+                        if(recMsg.children[1].innerText.trim()==oldMsg && recMsg.children[3].innerText==time){
+                            recMsg.children[1].innerText=msg+"        ";
+                        }
+
+                    }
+                    
+                })
 
                 socket.on("delRecMsg",(msg,timeStore)=>{
                     let recMsgs=document.querySelectorAll(".receiver");

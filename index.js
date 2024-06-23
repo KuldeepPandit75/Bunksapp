@@ -4,6 +4,7 @@ const app = express();
 const path = require("path");
 const Chat = require("./models/chat.js");
 const User = require("./models/user.js");
+const Vote = require("./models/vote.js");
 const Roll = require("./models/rollregisterd.js");
 const methodOverride = require("method-override");
 var jwt = require("jsonwebtoken");
@@ -141,7 +142,8 @@ app.get("/bunksapp/:id/:roomName", async(req, res) => {
         if(logCheck.authStat){
             chats = await Chat.find({room:roomName});
         };
-        res.render("bunksapp.ejs",{chats,logCheck,roomName});
+        let vote=await Vote.find();
+        res.render("bunksapp.ejs",{chats,logCheck,roomName,vote});
         // }else{
             // res.send("Logged Out! Log in Again.")
         // }
@@ -150,46 +152,6 @@ app.get("/bunksapp/:id/:roomName", async(req, res) => {
     }
     
 });
-
-// app.post("/bunksapp/chat/:id/:roomName",async(req,res)=>{
-//     try{
-//         let { sentMsg } = req.body;
-//         let {id,roomName}=req.params;
-//         const submitBtn=req.body.submitBtn;
-//         let user=await User.findById(id);
-
-//         if(submitBtn=="nonAnony"){
-//             let chat0 = new Chat({
-//                 from: user.name,
-//                 message: sentMsg,
-//                 room: roomName,
-//                 created_at: new Date(),
-//                 anonymous: false
-//             });
-//             chat0.save().catch((err) => {
-//                 console.log(err);
-//             });
-//         }else{
-//             let chat0 = new Chat({
-//                 from: user.name,
-//                 message: sentMsg,
-//                 room: roomName,
-//                 created_at: new Date(),
-//                 anonymous: true
-//             });
-//             chat0.save().catch((err) => {
-//                 console.log(err);
-//             });
-//         }
-        
-        
-            
-//     }catch{
-//         res.send("something went wrong");
-//     }
-//     res.status(204).send();
-    
-// });
 
 io.use((socket, next) => {
     try{
@@ -236,9 +198,9 @@ io.on("connection",(socket) => {
             socket.broadcast.to(joinedRoom[0]).emit("chatReqRec",id,name);
         })
 
-        // socket.on("sendVote",(f)=>{
-        //     socket.broadcast.to(joinedRoom[0]).emit("voteMsg",f);
-        // })
+        socket.on("votePost",async(data)=>{
+            await Vote.updateOne({_id:"6677ed93ca694849c9c1f4a7"},{votePorp:data.purpose, options:data.options,votingStat:true});
+        })
 
         socket.on("joinReq",(roomName)=>{
             socket.join(roomName);
@@ -293,8 +255,46 @@ io.on("connection",(socket) => {
 
         socket.on("allowed",async(id)=>{
             await User.updateOne({_id: id},{authStat:true});
+        });
+
+        socket.on("editMsgReq",async(msg,time,oldMsg)=>{
+            await Chat.updateOne({created_at:time,message:oldMsg},{message:msg});
+            socket.broadcast.emit("editRecMsgReq",msg,time,oldMsg);
         })
 
+        socket.on("resetVote",async()=>{
+            let log=await Vote.updateOne({_id:"6677ed93ca694849c9c1f4a7"},{votedYes:[],votedNo:[]});
+            console.log(log);
+        })
+
+        socket.on("voteUpdate",async(votedFor,id)=>{
+            let voteDet=await Vote.find();
+            if(!voteDet[0].votedYes.includes(id) && !voteDet[0].votedNo.includes(id)){
+                if(votedFor=="Ha"){
+                    let update={
+                        $push:{
+                            votedYes: `${id}`
+                        }
+                    }
+                    let log=await Vote.updateOne({_id:"6677ed93ca694849c9c1f4a7"},update);
+                    console.log(log);
+                    io.emit("votedYesLiveUpdate");
+                }else{
+                    let update={
+                        $push:{
+                            votedNo: `${id}`
+                        }
+                    }
+                    let log=await Vote.updateOne({_id:"6677ed93ca694849c9c1f4a7"},update);
+                    console.log(log);
+                    io.emit("votedNoLiveUpdate");
+
+                }
+            }else{
+                console.log('already voted');
+            }
+            
+        })
         
     }catch(err){
         console.log(err);
