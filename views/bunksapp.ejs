@@ -391,8 +391,6 @@
                     let currTime=new Date();
                     let duration=(currTime.getTime()- new Date(timeStore).getTime())/60000;
                     if(duration<60){
-                        editForm.style.top = `${posY-14}px`;
-                        editForm.style.left = `${posX-300}px`;
                         editForm.style.display="block";
                         msg=operationEle.children[0].innerText.trim();
                         editForm[0].value=msg;
@@ -509,9 +507,13 @@
                     document.getElementById('resetVote').addEventListener("click",()=>{
                         socket.emit("resetVote");
                         closePopup();
-                })
+                    });
                 }
                 
+                let chatSec=document.querySelector("#messages");
+                setTimeout(()=>{
+                    chatSec.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+                },100);
 
                 socket.on("votedYesLiveUpdate",()=>{
                     let options=document.querySelector("#options");
