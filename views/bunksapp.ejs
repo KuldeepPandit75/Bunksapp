@@ -553,15 +553,19 @@
 
                 socket.on("connect", () => {
                     console.log("Connected to server");
-                    socket.id=localStorage.getItem("socketId");
                     console.log(socket.id);
-                    setTimeout(()=>{
+                    
+                });
+
+
+                socket.on("welcome",(id)=>{
+                    if(socket.id=id){
                         let botText="Hello! I'm the Bot here. I'm here to guide you through the features of this Application.<br>&#8226; None other than Students of A8 can join this Room. So feel relaxed!<br>&#8226; You can send msgs anonymously by using that grey send button. But you are visible to Admin. It is just to avoid getting caught in SS or photos.<br>&#8226; You can also Delete, Edit your messages within 15 mins of sending.<br>&#8226; Every time you Relogin to your Account, You need admin permission to see previous Messages for safety purpose. For prev msgs req click on three dots on top-right corner. Once You gets the permission rejoin the room.<br>&#8226; You can also Vote for Bunking or not. And again your voted option is visible to admin"
                         let list=createRecMessageElement(botText,"bot:)",new Date());
                         let chatSec=document.querySelector("#messages");
                         chatSec.append(list);
-                    },100);
-                });
+                    }
+                })
 
                 socket.on("disconnect", () => {
                     console.log("Disconnected from server");

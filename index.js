@@ -190,6 +190,8 @@ io.on("connection",(socket) => {
         console.log("user connected!");
         console.log(socket.id);
 
+        socket.emit("welcome",socket.id);
+
         let joinedRoom=[];
 
         // socket.broadcast.emit(`${socket.id} joined the server`)
