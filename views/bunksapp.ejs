@@ -300,7 +300,9 @@
                         let list=createSentMessageElement(msg.value,date);
                         chatSec.append(list);  
                         socket.emit("msgSend", msg.value,"<%=logCheck.name%>","<%=logCheck.id%>",date);
-                        list.scrollIntoView({ behavior: 'smooth' });
+                        setTimeout(()=>{
+                            list.scrollIntoView({ behavior: 'smooth' });
+                        },100)
                     }
 
                     setTimeout(() => {
@@ -317,7 +319,9 @@
                         let list=createSentMessageElement(msg.value,date);
                         chatSec.append(list);  
                         socket.emit("msgAnonySend", msg.value,"anonymous","<%=logCheck.id%>",date);
-                        list.scrollIntoView({ behavior: 'smooth' });
+                        setTimeout(()=>{
+                            list.scrollIntoView({ behavior: 'smooth' });
+                        },100)
 
                     }
 
