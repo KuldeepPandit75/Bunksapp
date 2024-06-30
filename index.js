@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require("express");
 const app = express();
@@ -38,7 +39,7 @@ main()
     .catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect("mongodb+srv://kuldeeppandat:kpvaultserver8055@cluster1.rbtvmid.mongodb.net/whatsapp?retryWrites=true&w=majority&appName=Cluster1");
+    await mongoose.connect(process.env.SECRET_KEY);
 }
 
 app.get("/", (req, res) => {
@@ -82,10 +83,10 @@ app.post("/bunksapp/signup",async(req,res)=>{
             };
         }else{
             let newUser = new User({
-                name: name.toLowerCase(),
+                name: name.toLowerCase().trim(),
                 student: userStat,
-                email: email.toLowerCase(),
-                pass: password
+                email: email.toLowerCase().trim(),
+                pass: password.trim()
             });
             newUser.save()
                 .catch((err) => {
@@ -107,8 +108,8 @@ app.post("/bunksapp/login",async(req,res)=>{
     try{
         let {email,pass}=req.body;
         let validUser=await User.find({
-            email:email,
-            pass:pass
+            email:email.trim().toLowerCase(),
+            pass:pass.trim()
             });
         if(validUser.length!=0){
             const token=jwt.sign({_id: validUser[0]._id},secretKeyJWT);
